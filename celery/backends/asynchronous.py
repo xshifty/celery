@@ -34,6 +34,8 @@ def register_drainer(name):
 class Drainer(object):
     """Result draining service."""
 
+    mutex = threading.Lock()
+
     def __init__(self, result_consumer):
         self.result_consumer = result_consumer
 
@@ -61,7 +63,11 @@ class Drainer(object):
                 break
 
     def wait_for(self, p, wait, timeout=None):
-        wait(timeout=timeout)
+        self.mutex.acquire()
+        r = wait(timeout=timeout)
+        sleep(0.0001)
+        self.mutex.release()
+        return r
 
 
 class greenletDrainer(Drainer):
